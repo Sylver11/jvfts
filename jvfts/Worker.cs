@@ -23,7 +23,7 @@ namespace jvfts
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
-            {
+            {   // instead of using the directory Processing I could have used GetTempFile method
                 string sourceDirectory = "/Users/justus/source";
                 string targetDirectory = System.IO.Directory.GetCurrentDirectory() + "/Processing";
                 string[] files = Directory.GetFiles(targetDirectory);
@@ -32,32 +32,20 @@ namespace jvfts
                     List<string> filelines = File.ReadAllLines(fileName).ToList();
                     for (int i = 0; i < filelines.Count; i = i + 100)
                     {
+                        // batching 100 items together and processing them with ColProcess
                         var items = string.Join(",", filelines.Skip(i).Take(100));
 
-                        //var items = bigList.Skip(i).Take(100);
-           
-                        //string[] parts = items.Split(',');
-                        //var split_items = items.Split(',')
-                        //ColData transaction = new ColData();
-                        //transaction.entry_date = parts[0];
-                        //transaction.client_name = parts[1];
-                        //transaction.client_code = parts[2];
-                        //transaction.gl_account_number = Convert.ToInt32(parts[3]);
-                        //transaction.transaction_amount = Convert.ToDouble(parts[4]);
-                        Console.WriteLine("Wachting for changes in '{0}'.", items);
+                        //after success taking the the batch and deleting the lines from the temporary file in the processing directory 
+                        string[] filteredLines = File.ReadAllLines(fileName).Where(l => !l.Contains(items)).ToArray();
 
-                        // Do something with 100 or remaining items
+                        Console.WriteLine("Batches of 100: '{0}'.", items);
                     }
+                    
                     Console.WriteLine("Next file");
                 }
                 
-                //foreach (string fileName in fileEntries)
-                //{
-                    //List<string> filelines = File.ReadAllLines(fileName).ToList();
-                    //_ = new ColProcess(fileName);
-                //}
-                //Console.WriteLine("Wachting for changes in '{0}'.", fileName);
-                //var x = ProcessDirectory(targetPath);
+                // most propbaly unnecessary to create an instance of the BlockAndDelay class here
+                //TODO congigure BlockAndDelay to run on its own terms
                 var file = new BlockAndDelay(sourceDirectory);
                 await Task.Delay(2000, stoppingToken);
             }

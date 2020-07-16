@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -12,8 +11,6 @@ namespace jvfts
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private string[] arr = new string[] { };
-        private string[] bigList = new string[] { };
 
         public Worker(ILogger<Worker> logger)
         {
@@ -23,27 +20,50 @@ namespace jvfts
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
-            {   // instead of using the directory Processing I could have used GetTempFile method
+            {
+                // instead of using the directory Processing I could have used GetTempFile method
                 string sourceDirectory = "/Users/justus/source";
-                string targetDirectory = System.IO.Directory.GetCurrentDirectory() + "/Processing";
+                string targetDirectory = Directory.GetCurrentDirectory() + "/Processing";
                 string[] files = Directory.GetFiles(targetDirectory);
-                foreach (string fileName in files)
+
+                if (files == null)
                 {
-                    List<string> filelines = File.ReadAllLines(fileName).ToList();
-                    for (int i = 0; i < filelines.Count; i = i + 100)
-                    {
-                        // batching 100 items together and processing them with ColProcess
-                        var items = string.Join(",", filelines.Skip(i).Take(100));
-
-                        //after success taking the the batch and deleting the lines from the temporary file in the processing directory 
-                        string[] filteredLines = File.ReadAllLines(fileName).Where(l => !l.Contains(items)).ToArray();
-
-                        Console.WriteLine("Batches of 100: '{0}'.", items);
-                    }
-                    
-                    Console.WriteLine("Next file");
+                    Console.WriteLine("Files does not exis.");
                 }
-                
+
+                else if (files.Length > 0)
+                {
+                    foreach (string fileName in files)
+                    {
+                        //removing column descriptions on the first line of each file
+                        var filelines = File.ReadAllLines(fileName);
+                        File.WriteAllLines(fileName, filelines.Skip(1).ToList());
+                        filelines = File.ReadAllLines(fileName);
+
+                        // check if the file has any content
+                        if (filelines.Length > 0)
+                        {
+                            for (int i = 0; i < filelines.Length; i++)
+                            {
+                                // batching 100 items together and processing them with ColProcess
+                                var items = string.Join(";", filelines.Take(100));
+                                var x = new ColProcess(items);
+
+                                //skip 100 lines and write new file
+                                filelines = File.ReadAllLines(fileName);
+                                File.WriteAllLines(fileName, filelines.Skip(100).ToList());
+                            }
+                        }
+                        else
+                        {
+                            //delete file if empty
+                            Console.WriteLine("Deleted file: '{0}'.", fileName);
+                            File.Delete(fileName);
+                        }
+                        Console.WriteLine("Next file");
+                    }
+                }
+
                 // most propbaly unnecessary to create an instance of the BlockAndDelay class here
                 //TODO congigure BlockAndDelay to run on its own terms
                 var file = new BlockAndDelay(sourceDirectory);

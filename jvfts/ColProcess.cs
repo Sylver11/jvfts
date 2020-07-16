@@ -1,35 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace jvfts
 {
     public class ColProcess
     {
-        public ColProcess(string path)
+        public ColProcess(string transaction_batches)
         {
-
-            List<ColData> allClientInfo = new List<ColData>();
-            List<string> filelines = File.ReadAllLines(path).ToList();
-            filelines.RemoveAt(0);
-            foreach (string line in filelines)
+            List<ColData> TransactionInfo = new List<ColData>();
+            string[] transactions = transaction_batches.Split(';');
+            foreach (string transaction_string in transactions)
             {
-                string[] parts = line.Split(',');
-
+                string[] parts = transaction_string.Split(',');
                 ColData transaction = new ColData();
                 transaction.entry_date = parts[0];
                 transaction.client_name = parts[1];
                 transaction.client_code = parts[2];
                 transaction.gl_account_number = Convert.ToInt32(parts[3]);
                 transaction.transaction_amount = Convert.ToDouble(parts[4]);
-                //onvert.ToDecimal(parts[4]);
-
-                allClientInfo.Add(transaction);
+                TransactionInfo.Add(transaction);
             }
-            foreach (var item in allClientInfo)
+
+            int i = 0;
+            foreach (var item in TransactionInfo)
             {
-                Console.WriteLine("A client name: '{0}'.", item.client_name);
+                //Console.WriteLine("this runs" );
+                //Console.WriteLine("A client name: '{0}'.", i);
+                i++;
             }
         }
         class ColData

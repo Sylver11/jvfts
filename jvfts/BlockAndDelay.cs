@@ -12,9 +12,8 @@ namespace jvfts
         private readonly MemoryCache _memCache;
         private readonly CacheItemPolicy _cacheItemPolicy;
         private const int CacheTimeMilliseconds = 1000;
-        //private List<string> files = new List<string>();
 
-        private string path = "/Users/justus/source";
+        //private string path = "/Users/justus/source";
 
         public BlockAndDelay(string path)
         {
@@ -48,10 +47,8 @@ namespace jvfts
         {
             if (args.RemovedReason != CacheEntryRemovedReason.Expired) return;
             var e = (FileSystemEventArgs)args.CacheItem.Value;
-            Console.WriteLine("Wachting for changes in '{0}'.", e.FullPath);
-            //this.StringValue = e.FullPath;
+            Console.WriteLine("Changed item: '{0}'.", e.FullPath);
             var e_ = new FileCopy(e.FullPath);
-            //var _e = new ColProcess(e.FullPath);
         }
     }
 }

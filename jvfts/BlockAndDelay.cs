@@ -13,8 +13,6 @@ namespace jvfts
         private readonly CacheItemPolicy _cacheItemPolicy;
         private const int CacheTimeMilliseconds = 1000;
 
-        //private string path = "/Users/justus/source";
-
         public BlockAndDelay(string path)
         {
             _memCache = MemoryCache.Default;

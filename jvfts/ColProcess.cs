@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace jvfts
 {
@@ -13,7 +14,7 @@ namespace jvfts
             {
                 string[] parts = transaction_string.Split(',');
                 ColData transaction = new ColData();
-                transaction.entry_date = parts[0];
+                transaction.entry_date = DateTime.ParseExact(parts[0], "ddMMyyyy", null).ToString("yyyy/MM/dd");
                 transaction.client_name = parts[1];
                 transaction.client_code = parts[2];
                 transaction.gl_account_number = Convert.ToInt32(parts[3]);
@@ -21,12 +22,10 @@ namespace jvfts
                 TransactionInfo.Add(transaction);
             }
 
-            int i = 0;
+            //TODO parsing the data to the db here
             foreach (var item in TransactionInfo)
             {
-                //Console.WriteLine("this runs" );
-                //Console.WriteLine("A client name: '{0}'.", i);
-                i++;
+                Console.WriteLine("A account numbver: '{0}'.", item.entry_date);
             }
         }
         class ColData

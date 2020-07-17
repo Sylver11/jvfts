@@ -23,6 +23,9 @@ namespace jvfts
             {
                 // instead of using the directory Processing I could have used GetTempFile method
                 string sourceDirectory = "/Users/justus/source";
+
+                // writing to direcotory inside project folder
+                //TODO exclude Processing folder from .gitignore file
                 string targetDirectory = Directory.GetCurrentDirectory() + "/Processing";
                 string[] files = Directory.GetFiles(targetDirectory);
 
@@ -45,8 +48,12 @@ namespace jvfts
                         {
                             for (int i = 0; i < filelines.Length; i++)
                             {
-                                // batching 100 items together and processing them with ColProcess
+                                //TODO Check what happens to last batch when less than 100
+
+                                // batching 100 items together
                                 var items = string.Join(";", filelines.Take(100));
+
+                                // passing 100 items to the ColProcess where data get manipulated and passed to the db
                                 var x = new ColProcess(items);
 
                                 //skip 100 lines and write new file

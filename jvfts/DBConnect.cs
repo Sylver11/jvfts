@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
+using System.Threading;
 using MySql.Data.MySqlClient;
 
 namespace jvfts
 {
-    class DBConnect
+    class DBConnect 
     {
+        
+        public static int ConnectionAttempts;
         private MySqlConnection connection;
-        private string server;
-        private string database;
-        private string uid;
-        private string password;
 
         public DBConnect()
         {
@@ -21,39 +20,52 @@ namespace jvfts
 
         private void Initialize()
         {
-            //TODO set environment variables for credentials to be retrieved
-            server = "localhost";
-            database = "jvfts";
-            uid = "root";
-            password = "pass";
             string connectionString;
-            connectionString = "SERVER=" + server + ";" + "DATABASE=" +
-            database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
-
+            connectionString = "SERVER=" + UserSecrets.db_address + ";" + "DATABASE=" +
+            UserSecrets.db_name + ";" + "UID=" + UserSecrets.db_user + ";" + "PASSWORD=" + UserSecrets.db_password + ";";
             connection = new MySqlConnection(connectionString);
         }
 
         private bool OpenConnection()
         {
-            try
+            //problem of using a while loop for trying to access the db is that one
+            //cannot insert return false statement at end of exception catching
+            //which means that for the first two attempts no error is returned
+            //exept from closing the connection which prevents anythings from being deleted in the
+            // txt files but still doesn feel like a good solution to this
+            while (ConnectionAttempts != 2)
             {
-                connection.Open();
-                return true;
-            }
-            catch (MySqlException ex)
-            {
-                switch (ex.Number)
+                try
                 {
-                    case 0:
-                        Console.WriteLine("Cannot connect to server.  Contact administrator");
-                        break;
+                    connection.Open();
+                    if (ConnectionAttempts > 2)
+                    {
+                        //send email comnfiming everything is in order again
+                        var x = new SendMail("DB connection was re-established.");
+                    }
 
-                    case 1045:
-                        Console.WriteLine("Invalid username/password, please try again");
-                        break;
+                    //in case there were failed attempts before
+                    ConnectionAttempts = 0;
+                    return true;
                 }
-                return false;
+                catch (MySqlException ex)
+                {
+                    Console.WriteLine(ex.Message);       
+                    ConnectionAttempts++;
+
+                    if (ConnectionAttempts == 2)
+                    {
+                        //sending email with error message
+                        var SendErrorEmail = new SendMail(ex.Message);
+                    }
+                }
+
+                //let the failed connection attempt sleep for 1 minute
+                Thread.Sleep(1000 * 60);
             }
+
+            ConnectionAttempts++;
+            return false;
         }
 
         private bool CloseConnection()

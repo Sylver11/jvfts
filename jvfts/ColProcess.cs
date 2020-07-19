@@ -23,6 +23,9 @@ namespace jvfts
             var db = new DBConnect();
             db.Insert(Rows);
 
+
+
+
         }
     }
 }
